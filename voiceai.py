@@ -19,40 +19,14 @@ from loadconversion import ConversionControl
 
 class VoiceAIControl:
 	def __init__(self):#, ner_dir, pos_dir, ft_dir):
-		configuration = open("config.bot", 'r')
+
 		#MODELS_DIR, FASTTEXT_DIR, POS_DIR, NER_DIR, MUSIC_XML_DIR
-		MODELS_DIR = ""
 		FASTTEXT_DIR = ""
-		POS_DIR = ""
 		NER_DIR = ""
 		MUSIC_XML_DIR = ""
-		lines = [line.strip() for line in configuration.readlines()]
-		i = 0
-		while i < len(lines):
-			if lines[i] == 'MODELS_DIR':
-				i = i+1
-				MODELS_DIR = lines[i]
-				i = i+1
-			if lines[i] == 'FASTTEXT_DIR':
-				i = i+1
-				FASTTEXT_DIR = lines[i]
-				i = i+1
-			if lines[i] == 'POS_DIR':
-				i = i+1
-				POS_DIR = lines[i]
-				i = i+1
-			if lines[i] == 'NER_DIR':
-				i = i+1
-				NER_DIR = lines[i]
-				i = i+1
-			if lines[i] == 'MUSIC_XML_DIR':
-				i = i+1
-				MUSIC_XML_DIR = lines[i]
-				i = i+1
-
-
+		
 		self.snt = StanfordNERTagger(MODELS_DIR+"/stanford-ner/voiceai-ner.ser.gz", NER_DIR)#'stanford-ner/voiceai-ner.ser.gz', 'stanford-ner/stanford-ner.jar') 
-		self.spt = StanfordPOSTagger(MODELS_DIR+"/stanford-pos/voiceai-pos.tagger", POS_DIR)#'stanford-pos/voiceai-pos.tagger', 'stanford-pos/stanford-postagger.jar')
+#		self.spt = StanfordPOSTagger(MODELS_DIR+"/stanford-pos/voiceai-pos.tagger", POS_DIR)#'stanford-pos/voiceai-pos.tagger', 'stanford-pos/stanford-postagger.jar')
 
 		self.mp  = MusicControl(MUSIC_XML_DIR, '/run/media/vidur/Kachra/Music/')
 		self.hc  = HardwareControl()
