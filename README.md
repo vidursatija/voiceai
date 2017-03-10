@@ -6,24 +6,26 @@ Voiceai is a library for controlling a machine using text and voice based interf
 3. The Facebook [fastText](https://github.com/facebookresearch/fastText) api for text classification
 
 ## Features 
-#### The following features are available with commands: 
+### The following features are available with commands: 
 
 1. Music control
   1. Play Song/Artist/Album
   2. Pause
   3. Stop
   4. Resume
-Note : ML Algorithm for learning taste of music coming soon
+Music library must be provided as json file.
+Note : ML Algorithm for learning taste of music coming soon.
   
 2. Hardware Control
   1. Adjust volume
   2. Adjust brightness (*needs root access*)
-
-##### Coming soon  
+  
 3. Conversion Control
-  1. Convert units and dimensions
+  1. Convert units and dimensions (*coming soon*)
   2. Convert currencies (*internet required*) ([fixer.io](http://api.fixer.io/))
   
+##### Coming Soon
+
 4. Web search Control
   1. Search anything using the [DuckDuckGo](https://duckduckgo.com) api
 
@@ -37,6 +39,7 @@ Note : ML Algorithm for learning taste of music coming soon
   1. Use Wolfram Alpha to get answers to mathematical answers
 
 #### The following features are available using scripting:
+
 1. Training
   1. Added new sentences for text classification (fastText)
 

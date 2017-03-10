@@ -2,6 +2,7 @@
 import nltk
 from nltk.tag.stanford import StanfordNERTagger
 from nltk.tag.stanford import StanfordPOSTagger
+from nltk.parse.stanford import StanfordDependencyParser
 
 #SYSTEM LIBs
 #import urllib.request
@@ -11,9 +12,6 @@ import os
 #MODULE CONTROLS
 from loadmusic import MusicControl
 from loadhardware import HardwareControl
-#from loadnet import QuestionControl
-#from loadalarm import AlarmControl
-#from loadgreet import GreetingControl
 from typeclassifier import TypeClassifier
 from loadconversion import ConversionControl
 
@@ -21,19 +19,17 @@ class VoiceAIControl:
 	def __init__(self):#, ner_dir, pos_dir, ft_dir):
 
 		#MODELS_DIR, FASTTEXT_DIR, POS_DIR, NER_DIR, MUSIC_XML_DIR
-		FASTTEXT_DIR = ""
-		NER_DIR = ""
-		MUSIC_XML_DIR = ""
+		FASTTEXT_DIR = "fastText"
+		MUSIC_DATABASE = "music_metadata.json"
 		
-		self.snt = StanfordNERTagger(MODELS_DIR+"/stanford-ner/voiceai-ner.ser.gz", NER_DIR)#'stanford-ner/voiceai-ner.ser.gz', 'stanford-ner/stanford-ner.jar') 
-#		self.spt = StanfordPOSTagger(MODELS_DIR+"/stanford-pos/voiceai-pos.tagger", POS_DIR)#'stanford-pos/voiceai-pos.tagger', 'stanford-pos/stanford-postagger.jar')
+		self.snt = StanfordNERTagger('models/stanford-ner/voiceai-ner.ser.gz', 'models/../stanford-ner/stanford-ner.jar') 
+		self.spt = StanfordPOSTagger('stanford-pos/models/english-left3words-distsim.tagger', 'models/../stanford-pos/stanford-postagger.jar') 
+		self.sdp = StanfordDependencyParser(path_to_jar="models/../stanford-parser/stanford-parser.jar", path_to_models_jar="/run/media/vidur/Kachra/stanford-english-corenlp-2016-10-31-models.jar")
 
-		self.mp  = MusicControl(MUSIC_XML_DIR, '/run/media/vidur/Kachra/Music/')
+		self.tyc = TypeClassifier("fastText/voiceai.bin", FASTTEXT_DIR+"/fasttext")#"fastText/voiceai.bin")
+
+		self.mp  = MusicControl(MUSIC_DATABASE, '/run/media/vidur/Kachra/Music/')		
 		self.hc  = HardwareControl()
-		#self.qc  = QuestionControl()
-		#self.ac  = AlarmControl()
-		#self.gc  = GreetingControl()
-		self.tyc = TypeClassifier(MODELS_DIR+"/fastText/voiceai.bin", FASTTEXT_DIR+"/fasttext")#"fastText/voiceai.bin")
 		self.cc  = ConversionControl()
 
 	def process_message(self, msg):
@@ -44,92 +40,20 @@ class VoiceAIControl:
 		#1 - Music
 		#2 - Brightness and Volume
 		#3 - Units and Money
-		#4 - Questions/Google/Wiki
-		#5 - Alarm
 
 		#CATCH POS
-		ENT = []
-		NNN = []
-		VER = []
-		ADJ = []
-		QFR = []
-		PRE = []
-		QUS = []
-		NUM = []
-		PCL = []
-		classify_text = ""
-		function_text = []
-		pos_tagged = self.spt.tag(msg_words)
-		tag_text = ""
-		
-		for i, tup in enumerate(pos_tagged):
-			mixed = tup[0]+'-'+tup[1]
-			msg = msg + ' ' + mixed
-			if tup[1] == 'VER':
-				VER.append((i, tup[0].lower()))
-			else:
-				if tup[1] == 'ADJ':
-					ADJ.append((i, tup[0].lower()))
-				else:
-					if tup[1] == 'NNN':
-						NNN.append((i, tup[0].lower()))
-					else:
-						if tup[1] == 'NUM':
-							NUM.append((i, tup[0]))
-						else:
-							if tup[1] == 'ENT':
-								ENT.append((i, tup[0].lower()))
-							else:
-								if tup[1] == 'QFR':
-									QFR.append((i, tup[0].lower()))
-								else:
-									if tup[1] == 'QUS':
-										QUS.append((i, tup[0].lower()))
-									else:
-										if tup[1] == 'PRE':
-											PRE.append((i, tup[0].lower()))
-										else:
-											if tup[1] == 'PCL':
-												PCL.append((i, tup[0].lower()))
-											else:
-												continue
-
-			if tup[1] == 'ADJ' or tup[1] == 'QFR' or tup[1] == 'PCL':
-				pass
-			else:
-				if tup[1] == 'ENT' or tup[1] == 'NUM':
-					classify_text = classify_text + tup[1] + " "
-				else:
-					classify_text = classify_text + tup[0] + " "
-
-			if tup[1] == 'NUM' or tup[1] == 'ENT':
-				function_text.append(tup[1])
-			else:
-				function_text.append(tup[0]) 
-
-			tag_text = tag_text + tup[1] + " "
-
-		saveF = open("allTexts.tsv", 'a')
-		saveF.write(msg)
-		saveF.write('\n')
-		saveF.close()
-
-		print(tag_text)
-		print(classify_text)
-		print(function_text)
-
-		textType, prob = self.tyc.classifyText(classify_text)
-		if textType > -1:
-			msg="__label__"+str(textType)
-			print("Prob : "+prob)
-		else:
-			return "I'm sorry I didn't get that, Vidur"
-
-		TypeClassifierFile = open("fastText/voiceai-train.tsv", 'a')
-		TypeClassifierFile.write("__label__"+str(textType)+" , "+classify_text.lower()+'\n')
-		TypeClassifierFile.close()
-		
-		#CATCH ENTITIES
+		tags = self.spt.tag(msg_words)
+		parsed = self.sdp.tagged_parse(tags)
+		#print(tuple(tags))
+		relations = [list(par.triples()) for par in parsed]
+		relations = relations[0]
+		#sent_tree = [par.tree() for par in parsed]
+		#sent_tree = sent_tree[0]
+		print(relations)
+		#print(sent_tree)#.pretty_print())
+		#print([list(par.triples()) for par in parsed])# for parse in parsed])# self.sdp.raw_parse(msg)])
+		#print([par.tree().pretty_print() for par in parsed])# for parse in parsed])# self.sdp.raw_parse(msg)])
+		"""
 		entities = []
 		ct = -1
 		prevEntity = False
@@ -261,3 +185,4 @@ class VoiceAIControl:
 
 		if textType == 4:
 			return "".join([msg, "Search request"])
+			"""
