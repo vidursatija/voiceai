@@ -8,6 +8,7 @@ from nltk.parse.stanford import StanfordDependencyParser
 #import urllib.request
 #import json
 import os
+from pprint import pprint
 
 #MODULE CONTROLS
 from loadmusic import MusicControl
@@ -34,7 +35,7 @@ class VoiceAIControl:
 
 	def process_message(self, msg):
 		msg_words = nltk.word_tokenize(msg)
-		msg_words[0] = msg_words[0].lower()
+		#msg_words[0] = msg_words[0].lower()
 		original_msg = msg
 		#MESSAGE TYPE CLASSIFIERS:
 		#1 - Music
@@ -42,15 +43,36 @@ class VoiceAIControl:
 		#3 - Units and Money
 
 		#CATCH POS
+		#tags = [('turn', 'VB'), ('some', 'DT'), ('Taylor', 'NNP'), ('Swift', 'NNP'), ('songs', 'NNS'), ('on', 'RP')]#self.spt.tag(msg_words)
 		tags = self.spt.tag(msg_words)
+		entities = []
+		ct = -1
+		prevEntity = False
+		for i, tup in enumerate(tags):
+			if tup[1] == 'NNP' or tup[1] == 'NNPS':
+				if prevEntity == True:
+					entities[ct].append(tup[0])
+					#tup[0] = 'ENTITY'
+					tags.pop(i)
+				else:
+					ct = ct + 1
+					entities.append([])
+					entities[ct].append(tup[0])
+					prevEntity = True
+			else:
+				prevEntity = False
+
+
+
 		parsed = self.sdp.tagged_parse(tags)
-		#print(tuple(tags))
-		relations = [list(par.triples()) for par in parsed]
+		print(tags)
+		pars = [par for par in parsed]
+		relations = [list(par.triples()) for par in pars]
 		relations = relations[0]
-		#sent_tree = [par.tree() for par in parsed]
-		#sent_tree = sent_tree[0]
+		sent_tree = [par.tree() for par in pars]
 		print(relations)
-		#print(sent_tree)#.pretty_print())
+		print(sent_tree[0].pretty_print())
+		print(sent_tree[0])
 		#print([list(par.triples()) for par in parsed])# for parse in parsed])# self.sdp.raw_parse(msg)])
 		#print([par.tree().pretty_print() for par in parsed])# for parse in parsed])# self.sdp.raw_parse(msg)])
 		"""
