@@ -13,6 +13,7 @@ Voiceai is a library for controlling a machine using text and voice based interf
   2. Pause
   3. Stop
   4. Resume
+
 Music library must be provided as json file.
 Note : ML Algorithm for learning taste of music coming soon.
   

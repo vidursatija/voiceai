@@ -29,9 +29,13 @@ class VoiceAIControl:
 
 		self.tyc = TypeClassifier("fastText/voiceai.bin", FASTTEXT_DIR+"/fasttext")#"fastText/voiceai.bin")
 
-		self.mp  = MusicControl(MUSIC_DATABASE, '/run/media/vidur/Kachra/Music/')		
+		self.mp  = MusicControl(MUSIC_DATABASE)		
 		self.hc  = HardwareControl()
 		self.cc  = ConversionControl()
+
+		self.myName = "Halzee"
+		self.age = 16
+		self.creator = "Vidur"
 
 	def process_message(self, msg):
 		msg_words = nltk.word_tokenize(msg)
@@ -42,9 +46,23 @@ class VoiceAIControl:
 		#2 - Brightness and Volume
 		#3 - Units and Money
 
+
+		if msg_words[0] == self.myName:
+			if msg_words[1] == '.' or msg_words[1] == ',' :
+				msg_words = msg_words[2:]
+			else:
+				msg_words = msg_words[1:]
+
+
+		msg_words[0] = msg_words[0].lower()
+		msg_words[0] = "".join([msg_words[0][0].upper(), msg_words[0][1:]]) 
+
 		#CATCH POS
 		#tags = [('turn', 'VB'), ('some', 'DT'), ('Taylor', 'NNP'), ('Swift', 'NNP'), ('songs', 'NNS'), ('on', 'RP')]#self.spt.tag(msg_words)
 		tags = self.spt.tag(msg_words)
+
+
+
 		entities = []
 		ct = -1
 		prevEntity = False
@@ -58,11 +76,12 @@ class VoiceAIControl:
 					ct = ct + 1
 					entities.append([])
 					entities[ct].append(tup[0])
+					tags[i] = ("ENTITY_"+str(ct), tup[1])
 					prevEntity = True
 			else:
 				prevEntity = False
 
-
+		#tags[0] = ('1', tags[0][1])
 
 		parsed = self.sdp.tagged_parse(tags)
 		print(tags)
@@ -71,8 +90,55 @@ class VoiceAIControl:
 		relations = relations[0]
 		sent_tree = [par.tree() for par in pars]
 		print(relations)
-		print(sent_tree[0].pretty_print())
-		print(sent_tree[0])
+
+		#find relations
+		Advmod   = []
+		Amod     = []
+		Case     = []
+		Compound = []
+		CmpdPrt  = []
+		Det      = []
+		Dobj     = []
+		Nmod     = []
+		Nsubj    = []
+		Xcomp    = []
+
+		for tup in relations:
+			if tup[1] == 'advmod':
+				Advmod.append((tup[0], tup[2]))
+			else:
+				if tup[1] == 'amod':
+					Amod.append((tup[0], tup[2]))
+				else:
+					if tup[1] == 'case':
+						Case.append((tup[0], tup[2]))
+					else:
+						if tup[1] == 'compound':
+							Case.append((tup[0], tup[2]))
+						else:
+							if tup[1] == 'compound:prt':
+								CmpdPrt.append((tup[0], tup[2]))
+							else:
+								if tup[1] == 'det':
+									Det.append((tup[0], tup[2]))
+								else:
+									if tup[1] == 'nmod':
+										Nmod.append((tup[0], tup[2]))
+									else:
+										if tup[1] == 'nsubj':
+											Nsubj.append((tup[0], tup[2]))
+										else:
+											if tup[1] == 'xcomp':
+												Xcomp.append((tup[0], tup[2]))
+											else:
+												if tup[1] == 'dobj':
+													Dobj.append((tup[0], tup[2]))
+
+
+
+
+		#print(sent_tree[0].pretty_print())
+		#print(sent_tree)
 		#print([list(par.triples()) for par in parsed])# for parse in parsed])# self.sdp.raw_parse(msg)])
 		#print([par.tree().pretty_print() for par in parsed])# for parse in parsed])# self.sdp.raw_parse(msg)])
 		"""

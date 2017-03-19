@@ -6,17 +6,16 @@ from pprint import pprint
 import json
 
 class MusicControl:
-	def __init__(self, xmlDir, musicDir):
+	def __init__(self, xmlDir):
 		self.cvlc_loaded = False
 		self.list = []
-		self.defLoc = musicDir#'/run/media/vidur/Kachra/Music/'
 		data = []
 		with open('music_metadata.json') as data_file:    
 			data = json.load(data_file)
 
 
 		for song in data:
-			self.list.append([str(song["album"]), str(song["artist"]), str(song["name"]), "".join([self.defLoc, str(song["location"][49:])])])
+			self.list.append([str(song["album"]), str(song["artist"]), str(song["name"]), str(song["location"])])
 		#self.list.sort(key=lambda tup:tup[1])
 
 	def processText(self, textArray):
