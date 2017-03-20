@@ -10,41 +10,41 @@ Voiceai is a library for controlling a machine using text and voice based interf
 ### The following features are available with commands: 
 
 1. Music control
-  1. Play Song/Artist/Album
-  2. Pause
-  3. Stop
-  4. Resume
+  * Play Song/Artist/Album
+  * Pause
+  * Stop
+  * Resume
 
 Music library must be provided as json file.
 
 Note : ML Algorithm for learning taste of music coming soon.
   
 2. Hardware Control
-  1. Adjust volume
-  2. Adjust brightness (*needs root access*)
+  * Adjust volume
+  * Adjust brightness (*needs root access*)
   
 3. Conversion Control
-  1. Convert units and dimensions (*coming soon*)
-  2. Convert currencies (*internet required*) ([fixer.io](http://api.fixer.io/))
+  * Convert units and dimensions (*coming soon*)
+  * Convert currencies (*internet required*) ([fixer.io](http://api.fixer.io/))
   
 ##### Coming Soon
 
 4. Web search Control
-  1. Search anything using the [DuckDuckGo](https://duckduckgo.com) api
+  * Search anything using the [DuckDuckGo](https://duckduckgo.com) api
 
 5. Greeting Control
-  1. Engage in a casual conversation with the bot
+  * Engage in a casual conversation with the bot
 
 6. Alarm Control
-  1. Set alarms and reminders
+  * Set alarms and reminders
 
 7. Wolfram Control
-  1. Use Wolfram Alpha to get answers to mathematical answers
+  * Use Wolfram Alpha to get answers to mathematical answers
 
 #### The following features are available using scripting:
 
 1. Training
-  1. Added new sentences for text classification (fastText)
+  * Added new sentences for text classification (fastText)
 
 ### Installation
 Place the voiceai directory in your project
