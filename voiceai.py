@@ -2,65 +2,39 @@
 import nltk
 from nltk.tag.stanford import StanfordNERTagger
 from nltk.tag.stanford import StanfordPOSTagger
+from nltk.parse.stanford import StanfordDependencyParser
 
 #SYSTEM LIBs
 #import urllib.request
 #import json
 import os
+from pprint import pprint
 
 #MODULE CONTROLS
 from loadmusic import MusicControl
 from loadhardware import HardwareControl
-#from loadnet import QuestionControl
-#from loadalarm import AlarmControl
-#from loadgreet import GreetingControl
 from typeclassifier import TypeClassifier
 from loadconversion import ConversionControl
 
 class VoiceAIControl:
 	def __init__(self):#, ner_dir, pos_dir, ft_dir):
-		configuration = open("config.bot", 'r')
+
 		#MODELS_DIR, FASTTEXT_DIR, POS_DIR, NER_DIR, MUSIC_XML_DIR
-		MODELS_DIR = ""
-		FASTTEXT_DIR = ""
-		POS_DIR = ""
-		NER_DIR = ""
-		MUSIC_XML_DIR = ""
-		lines = [line.strip() for line in configuration.readlines()]
-		i = 0
-		while i < len(lines):
-			if lines[i] == 'MODELS_DIR':
-				i = i+1
-				MODELS_DIR = lines[i]
-				i = i+1
-			if lines[i] == 'FASTTEXT_DIR':
-				i = i+1
-				FASTTEXT_DIR = lines[i]
-				i = i+1
-			if lines[i] == 'POS_DIR':
-				i = i+1
-				POS_DIR = lines[i]
-				i = i+1
-			if lines[i] == 'NER_DIR':
-				i = i+1
-				NER_DIR = lines[i]
-				i = i+1
-			if lines[i] == 'MUSIC_XML_DIR':
-				i = i+1
-				MUSIC_XML_DIR = lines[i]
-				i = i+1
+		FASTTEXT_DIR = "fastText"
+		MUSIC_DATABASE = "music_metadata.json"
+		
+		self.snt = StanfordNERTagger('models/stanford-ner/voiceai-ner.ser.gz', 'models/../stanford-ner/stanford-ner.jar') 
+		self.spt = StanfordPOSTagger('stanford-pos/models/english-left3words-distsim.tagger', 'models/../stanford-pos/stanford-postagger.jar') 
 
+		self.tyc = TypeClassifier("fastText/voiceai.bin", FASTTEXT_DIR+"/fasttext")#"fastText/voiceai.bin")
 
-		self.snt = StanfordNERTagger(MODELS_DIR+"/stanford-ner/voiceai-ner.ser.gz", NER_DIR)#'stanford-ner/voiceai-ner.ser.gz', 'stanford-ner/stanford-ner.jar') 
-		self.spt = StanfordPOSTagger(MODELS_DIR+"/stanford-pos/voiceai-pos.tagger", POS_DIR)#'stanford-pos/voiceai-pos.tagger', 'stanford-pos/stanford-postagger.jar')
-
-		self.mp  = MusicControl(MUSIC_XML_DIR, '/run/media/vidur/Kachra/Music/')
+		self.mp  = MusicControl(MUSIC_DATABASE)		
 		self.hc  = HardwareControl()
-		#self.qc  = QuestionControl()
-		#self.ac  = AlarmControl()
-		#self.gc  = GreetingControl()
-		self.tyc = TypeClassifier(MODELS_DIR+"/fastText/voiceai.bin", FASTTEXT_DIR+"/fasttext")#"fastText/voiceai.bin")
 		self.cc  = ConversionControl()
+
+		self.myName = "Halzee"
+		self.age = 16
+		self.creator = "Vidur"
 
 	def process_message(self, msg):
 		msg_words = nltk.word_tokenize(msg)
@@ -74,66 +48,13 @@ class VoiceAIControl:
 		#5 - Alarm
 
 		#CATCH POS
-		ENT = []
-		NNN = []
-		VER = []
-		ADJ = []
-		QFR = []
-		PRE = []
-		QUS = []
-		NUM = []
-		PCL = []
-		classify_text = ""
-		function_text = []
-		pos_tagged = self.spt.tag(msg_words)
-		tag_text = ""
 		
-		for i, tup in enumerate(pos_tagged):
-			mixed = tup[0]+'-'+tup[1]
-			msg = msg + ' ' + mixed
-			if tup[1] == 'VER':
-				VER.append((i, tup[0].lower()))
-			else:
-				if tup[1] == 'ADJ':
-					ADJ.append((i, tup[0].lower()))
-				else:
-					if tup[1] == 'NNN':
-						NNN.append((i, tup[0].lower()))
-					else:
-						if tup[1] == 'NUM':
-							NUM.append((i, tup[0]))
-						else:
-							if tup[1] == 'ENT':
-								ENT.append((i, tup[0].lower()))
-							else:
-								if tup[1] == 'QFR':
-									QFR.append((i, tup[0].lower()))
-								else:
-									if tup[1] == 'QUS':
-										QUS.append((i, tup[0].lower()))
-									else:
-										if tup[1] == 'PRE':
-											PRE.append((i, tup[0].lower()))
-										else:
-											if tup[1] == 'PCL':
-												PCL.append((i, tup[0].lower()))
-											else:
-												continue
+		if tup[1] == 'NUM' or tup[1] == 'ENT':
+			function_text.append(tup[1])
+		else:
+			function_text.append(tup[0]) 
 
-			if tup[1] == 'ADJ' or tup[1] == 'QFR' or tup[1] == 'PCL':
-				pass
-			else:
-				if tup[1] == 'ENT' or tup[1] == 'NUM':
-					classify_text = classify_text + tup[1] + " "
-				else:
-					classify_text = classify_text + tup[0] + " "
-
-			if tup[1] == 'NUM' or tup[1] == 'ENT':
-				function_text.append(tup[1])
-			else:
-				function_text.append(tup[0]) 
-
-			tag_text = tag_text + tup[1] + " "
+		tag_text = tag_text + tup[1] + " "
 
 		saveF = open("allTexts.tsv", 'a')
 		saveF.write(msg)
