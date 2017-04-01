@@ -88,9 +88,9 @@ for line in cats:
 																									wrdtag = "."
 			if wrdtag == "":
 				wrdtag = "NNP"
-				#wrd = 'ENTITY'
 			if wrd == "":
 				continue
+			wrdtag = "x" + wrdtag 
 			if tags=="nn$" or tags=="nns$" or tags=="np$" or tags=="nps$" or tags=="pn$":
 				wrd_pos = wrd.split("'")
 				fw.write(wrd_pos[0])
@@ -99,7 +99,7 @@ for line in cats:
 				fw.write(' ')
 				fw.write("'s")
 				fw.write('_')
-				fw.write('POS')
+				fw.write('xPOS')
 				fw.write(' ')
 			else:	
 				fw.write(wrd)
