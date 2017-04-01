@@ -18,8 +18,12 @@ class MusicControl:
 			self.list.append([str(song["album"]), str(song["artist"]), str(song["name"]), str(song["location"])])
 		#self.list.sort(key=lambda tup:tup[1])
 
-	def processText(self, textArray):
+	def textFilter(self, tagged):
+		keep_words = ['VB', 'RP', 'NN']
 		return "Processed"
+
+	def functionFilter(self, tagged):
+		return "good"
 
 	def PlayList(self, SongList=None):
 		firstSongLoc = SongList[0][3]

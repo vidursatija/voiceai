@@ -23,8 +23,9 @@ class VoiceAIControl:
 		FASTTEXT_DIR = "fastText"
 		MUSIC_DATABASE = "music_metadata.json"
 		
-		self.snt = StanfordNERTagger('models/stanford-ner/voiceai-ner.ser.gz', 'models/../stanford-ner/stanford-ner.jar') 
+		self.snt = StanfordNERTagger('models/stanford-ner/voiceai-ner.ser.gz', 'models/../stanford-ner/stanford-ner.jar')
 		self.spt = StanfordPOSTagger('stanford-pos/models/english-left3words-distsim.tagger', 'models/../stanford-pos/stanford-postagger.jar') 
+#		self.spt = StanfordPOSTagger('/run/media/vidur/Kachra/edu/stanford/nlp/models/pos-tagger/english-caseless-left3words-distsim.tagger', 'models/../stanford-pos/stanford-postagger.jar') 
 
 		self.tyc = TypeClassifier("fastText/voiceai.bin", FASTTEXT_DIR+"/fasttext")#"fastText/voiceai.bin")
 
@@ -32,14 +33,14 @@ class VoiceAIControl:
 		self.hc  = HardwareControl()
 		self.cc  = ConversionControl()
 
-		self.myName = "Halzee"
+		self.my_name = "Halzee"
 		self.age = 16
 		self.creator = "Vidur"
 
 	def process_message(self, msg):
 		msg_words = nltk.word_tokenize(msg)
-		msg_words[0] = msg_words[0].lower()
 		original_msg = msg
+
 		#MESSAGE TYPE CLASSIFIERS:
 		#1 - Music
 		#2 - Brightness and Volume
@@ -47,9 +48,24 @@ class VoiceAIControl:
 		#4 - Questions/Google/Wiki
 		#5 - Alarm
 
+		if msg_words[0] == self.my_name:
+			if msg_words[1] == '.' or msg_words[1] == ',' :
+				msg_words = msg_words[2:]
+			else:
+				msg_words = msg_words[1:]
+
+
+		msg_words[0] = msg_words[0].lower()
+		msg_words[0] = "".join([msg_words[0][0].upper(), msg_words[0][1:]])
+
+
+		tags = self.spt.tag(msg_words)
+
+		print(tags)
+
 		#CATCH POS
 		
-		if tup[1] == 'NUM' or tup[1] == 'ENT':
+		"""if tup[1] == 'NUM' or tup[1] == 'ENT':
 			function_text.append(tup[1])
 		else:
 			function_text.append(tup[0]) 
@@ -208,3 +224,4 @@ class VoiceAIControl:
 
 		if textType == 4:
 			return "".join([msg, "Search request"])
+		"""
