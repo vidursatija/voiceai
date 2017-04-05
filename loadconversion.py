@@ -9,6 +9,44 @@ class ConversionControl:
 
 		self.exchUrl = "http://api.fixer.io/latest?symbols="
 
+	def textFilter(self, tagged):
+		keep_words = ['xWDT', 'xWRB', 'xVB', 'xIN']
+		change_tags = ['xCD', 'xNN']
+		# change tags -> keep tags -> return array of tuple
+
+		filtered_tags = []
+		for tup in tagged:
+			for k_w in keep_words:
+				if tup[1] == k_w:
+					filtered_tags.append(tup)
+					break
+
+			for c_t in change_tags:
+				if tup[1] == c_t:
+					filtered_tags.append((tup[1], tup[1]))
+					break
+
+		return filtered_tags
+
+	def functionFilter(self, tagged, pure_entities):
+		keep_words = ['xIN']
+		change_tags = ['xCD', 'xNNP']
+		# change tags -> keep tags -> return array of tuple
+
+		filtered_tags = []
+		for tup in tagged:
+			for k_w in keep_words:
+				if tup[1] == k_w:
+					filtered_tags.append(tup)
+					break
+
+			for c_t in change_tags:
+				if tup[1] == c_t:
+					filtered_tags.append((tup[1], tup[1]))
+					break
+
+		return filtered_tags
+
 	def convertMoney(self, from_m, quantity = 1, to_m = 'INR'):
 
 		jsonData = urlopen("".join([self.exchUrl, to_m, ",", from_m])).read()

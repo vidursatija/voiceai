@@ -13,14 +13,18 @@ class TypeClassifier():
 		f.write(text)
 		f.close()
 
-		process = Popen([self.edir, "predict", self.mdir, "tmp.dat"], stdout=PIPE, stderr=PIPE)
+		process = Popen([self.edir, "predict-prob", self.mdir, "tmp.dat"], stdout=PIPE, stderr=PIPE)
 		out, err = process.communicate()
 	
-		line = str(out, 'utf-8')
+		lines = str(out, 'utf-8')
+		lines = lines.split(' ')
+		line = lines[0]
+		prob = 0
 		if len(line) > 8:
 			num = int(line[9:])
+			prob = float(lines[1])
 		else:
 			num = -1
 		#print(out)		
-		return num
+		return num, prob
 

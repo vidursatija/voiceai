@@ -4,9 +4,13 @@ import random
 import time
 from pprint import pprint
 import json
+from typeclassifier import TypeClassifier
 
 class MusicControl:
 	def __init__(self, xmlDir):
+
+		self.classifier = TypeClassifier("fastText/voiceai-music.bin", "fastText/fasttext")
+
 		self.cvlc_loaded = False
 		self.list = []
 		data = []
@@ -19,11 +23,78 @@ class MusicControl:
 		#self.list.sort(key=lambda tup:tup[1])
 
 	def textFilter(self, tagged):
-		keep_words = ['VB', 'RP', 'NN']
-		return "Processed"
+		keep_words = ['xVB', 'xRP', 'xNN']
+		change_tags = ['xNNP']
+		# change tags -> keep tags -> return array of tuple
 
-	def functionFilter(self, tagged):
-		return "good"
+		filtered_tags = []
+		for tup in tagged:
+			for k_w in keep_words:
+				if tup[1] == k_w:
+					filtered_tags.append(tup)
+					break
+
+			for c_t in change_tags:
+				if tup[1] == c_t:
+					filtered_tags.append((tup[1], tup[1]))
+					break
+
+		print("Entities")
+		return filtered_tags
+
+	def functionFilter(self, tagged, pure_entities):
+		keep_words = ['xVB', 'xRP', 'xNN']
+		change_tags = ['xNNP', 'xJJ']
+		# change tags -> keep tags -> return array of tuple
+
+		filtered_tags = []
+		for tup in tagged:
+			for k_w in keep_words:
+				if tup[1] == k_w:
+					filtered_tags.append(tup)
+					break
+
+			for c_t in change_tags:
+				if tup[1] == c_t:
+					filtered_tags.append((tup[1], tup[1]))
+					break
+
+		text = [tup[0] for tup in filtered_tags]
+		f_type, prob = self.classifier.classifyText(" ".join(text))
+
+		msg = ""
+
+		if f_type > -1:
+			print("Prob : "+prob)
+		else:
+			return "I'm sorry I didn't get that, Vidur"
+
+		album_entity = None
+		artist_entity = None
+		song_entity = None
+
+		for entity in pure_entities:
+			if entity[0][1] == 'TRK':
+				song_entity = ' '.join(entity)
+				continue
+			if entity[0][1] == 'ALB':
+				album_entity = ' '.join(entity)
+				continue
+			if entity[0][1] == 'PER':
+				artist_entity = ' '.join(entity)
+				continue
+
+		if musicType == 1:
+			return "\n".join([msg, "Playing song :", self.Play(song_entity, artist_entity, album_entity)])#self.mp.Play(song_name, artist_name, album_name)])
+		if musicType == 2:
+			return "\n".join([msg, self.Stop()])
+		if musicType == 3:
+			return "\n".join([msg, self.Pause()])
+		if musicType == 4:
+			return "\n".join([msg, self.Next()])
+		if musicType == 5:
+			return "\n".join([msg, self.Prev()])
+
 
 	def PlayList(self, SongList=None):
 		firstSongLoc = SongList[0][3]

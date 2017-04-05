@@ -1,9 +1,13 @@
 import os
 from subprocess import Popen, PIPE
+from typeclassifier import TypeClassifier
 
 class HardwareControl:
 	
 	def __init__(self):
+
+		self.classifier = TypeClassifier("fastText/voiceai-hardware.bin", "fastText/fasttext")
+
 		self.backlightDir = "/sys/class/backlight/acpi_video0/"
 		self.maxBrightnessDir = self.backlightDir+'max_brightness'
 		self.brightnessDir = self.backlightDir+'brightness'
@@ -16,6 +20,67 @@ class HardwareControl:
 		f.close()
 
 		self.volumeCmd = "amixer set 'Master' "
+
+	def textFilter(self, tagged):
+		keep_words = ['xVB', 'xRP', 'xNN', 'xIN']
+		change_tags = ['xCD']
+		# change tags -> keep tags -> return array of tuple
+
+		filtered_tags = []
+		for tup in tagged:
+			for k_w in keep_words:
+				if tup[1] == k_w:
+					filtered_tags.append(tup)
+					break
+
+			for c_t in change_tags:
+				if tup[1] == c_t:
+					filtered_tags.append((tup[1], tup[1]))
+					break
+
+		return filtered_tags
+
+	def functionFilter(self, tagged, pure_entities):
+		keep_words = ['xVB', 'xRP', 'xNN', 'xIN']
+		change_tags = ['xCD']
+		NUM = []
+		# change tags -> keep tags -> return array of tuple
+
+		filtered_tags = []
+		for tup in tagged:
+			for k_w in keep_words:
+				if tup[1] == k_w:
+					filtered_tags.append(tup)
+					break
+
+			for c_t in change_tags:
+				if tup[1] == 'xCD':
+					NUM.append(int(tup[0]))
+
+				if tup[1] == c_t:
+					filtered_tags.append((tup[1], tup[1]))
+					break
+
+		text = [tup[0] for tup in filtered_tags]
+		f_type, prob = self.classifier.classifyText(" ".join(text))
+
+		msg = ""
+		percent = 15
+		if len(NUM) > 0:
+			percent = int(NUM[0])
+		if f_type == 1:
+			return "".join([msg, self.increaseVolume(percent)])
+		if f_type == 2:
+			return "".join([msg, self.increaseVolume(percent, False)])
+		if f_type == 3:
+			return "".join([msg, self.increaseBrightness(percent)])
+		if f_type == 4:
+			return "".join([msg, self.increaseBrightness(percent, False)])
+		if f_type == 5:
+			return "".join([msg, self.setVolume(percent)])
+		if f_type == 6:
+			return "".join([msg, self.setBrightness(percent)])
+		return "I'm sorry, I didn't get that"
 
 	def setVolume(self, percent):
 		os.system("".join([self.volumeCmd, str(percent), '%']))

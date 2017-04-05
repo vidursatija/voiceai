@@ -8,7 +8,7 @@ from nltk.parse.stanford import StanfordDependencyParser
 #import urllib.request
 #import json
 import os
-from pprint import pprint
+import numpy as np
 
 #MODULE CONTROLS
 from loadmusic import MusicControl
@@ -24,14 +24,15 @@ class VoiceAIControl:
 		MUSIC_DATABASE = "music_metadata.json"
 		
 		self.snt = StanfordNERTagger('models/stanford-ner/voiceai-ner.ser.gz', 'models/../stanford-ner/stanford-ner.jar')
-		self.spt = StanfordPOSTagger('stanford-pos/models/english-left3words-distsim.tagger', 'models/../stanford-pos/stanford-postagger.jar') 
+		self.spt = StanfordPOSTagger('stanford-pos/voiceai_bi.tagger', 'models/../stanford-pos/stanford-postagger.jar') 
 #		self.spt = StanfordPOSTagger('/run/media/vidur/Kachra/edu/stanford/nlp/models/pos-tagger/english-caseless-left3words-distsim.tagger', 'models/../stanford-pos/stanford-postagger.jar') 
 
 		self.tyc = TypeClassifier("fastText/voiceai.bin", FASTTEXT_DIR+"/fasttext")#"fastText/voiceai.bin")
 
-		self.mp  = MusicControl(MUSIC_DATABASE)		
-		self.hc  = HardwareControl()
-		self.cc  = ConversionControl()
+		self.controls = []
+		self.controls.append(MusicControl(MUSIC_DATABASE))
+		self.controls.append(HardwareControl())
+		self.controls.append(ConversionControl())
 
 		self.my_name = "Halzee"
 		self.age = 16
@@ -63,150 +64,41 @@ class VoiceAIControl:
 
 		print(tags)
 
-		#CATCH POS
+		tags, pure_entities = self.nerTaggerRun(tags)
+
+		print(tags)
+		print(pure_entities)
+
+		# take tags -> run NER -> keep 000 tags as same, rest are converted to NNP
+
+		all_filters = []
+		for control in self.controls:
+			all_filters.append(control.textFilter(tags))
 		
-		"""if tup[1] == 'NUM' or tup[1] == 'ENT':
-			function_text.append(tup[1])
-		else:
-			function_text.append(tup[0]) 
+		#all_types = []
+		#all_probs = []
+		final_type = -1
+		max_count = -1
+		type_counts = np.zeros(len(all_filters), dtype=int)
 
-		tag_text = tag_text + tup[1] + " "
+		for f in all_filters:
+			text = [tup[0] for tup in f]
+			t, p = self.tyc.classifyText(" ".join(text))
+			#all_types.append(t)
+			#all_probs.append(p)
+			if t == -1:
+				continue
+			type_counts[t-1] = type_counts[t-1] + 1
 
-		saveF = open("allTexts.tsv", 'a')
-		saveF.write(msg)
-		saveF.write('\n')
-		saveF.close()
-
-		print(tag_text)
-		print(classify_text)
-		print(function_text)
-
-		textType, prob = self.tyc.classifyText(classify_text)
-		if textType > -1:
-			msg="__label__"+str(textType)
-			print("Prob : "+prob)
-		else:
-			return "I'm sorry I didn't get that, Vidur"
-
-		TypeClassifierFile = open("fastText/voiceai-train.tsv", 'a')
-		TypeClassifierFile.write("__label__"+str(textType)+" , "+classify_text.lower()+'\n')
-		TypeClassifierFile.close()
+		for i, ct in enumerate(type_counts):
+			if ct > max_count:
+				max_count = ct
+				final_type = i
 		
-		#CATCH ENTITIES
-		entities = []
-		ct = -1
-		prevEntity = False
-		for i, tup in enumerate(ENT):
-			if tup[1] == 'ENT':
-				if prevEntity == True:
-					entities[ct].append(tup[0])
-				else:
-					ct = ct + 1
-					entities.append([])
-					entities[ct].append(tup[0])
-					prevEntity = True
-			else:
-				prevEntity = False
+		print(self.controls[final_type].functionFilter(tags, pure_entities))
 
-		#CATCH ENTITY TYPES
-		People = []
-		Organisations = []
-		Artworks = []
-		Locations = []
-		Time = []
-		Date = []
-		Money = []
+		"""
 		
-		msg = "".join([msg, "\nEntities : "])
-		for entity in entities:
-			pos_tagged = self.snt.tag(entity)
-			msg2 = " ".join(["-".join([x[0], x[1]]) for x in pos_tagged])
-			msg = "\n".join([msg, msg2])
-			if pos_tagged[0][1] == 'PER':
-				People.append(" ".join([x[0] for x in pos_tagged]))
-			if pos_tagged[0][1] == 'ART':
-				Artworks.append(" ".join([x[0] for x in pos_tagged]))
-			if pos_tagged[0][1] == 'ORG':
-				Organisations.append(" ".join([x[0] for x in pos_tagged]))
-			if pos_tagged[0][1] == 'LOC':
-				Locations.append(" ".join([x[0] for x in pos_tagged]))
-			if pos_tagged[0][1] == 'TIM':
-				Time.append(" ".join([x[0] for x in pos_tagged]))
-			if pos_tagged[0][1] == 'DAT':
-				Date.append(" ".join([x[0] for x in pos_tagged]))
-			if pos_tagged[0][1] == 'MON':
-				Money.append(" ".join([x[0] for x in pos_tagged]))
-
-		#SELECT TYPE CONTROL
-		#print(new_text)
-		if textType == 1:
-			#TYPE MUSIC			
-			musicClassifier = TypeClassifier("fastText/voiceai-music.bin", "fastText"+"/fasttext")
-			musicType, prob = musicClassifier.classifyText(" ".join(function_text))
-			if musicType > -1:
-				print("Prob : "+prob)
-			else:
-				return "I'm sorry I didn't get that, Vidur"
-
-			song_name = None
-			artist_name = None
-			album_name = None
-
-			if len(People) > 0:
-				artist_name = People[0]
-
-			if len(Artworks) > 0:
-				song_name = Artworks[0]
-
-			if len(Artworks) > 1:
-				album_name = Artworks[1] 
-			
-			print(musicType)
-			TypeClassifierFile = open("fastText/voiceai-music.tsv", 'a')
-			TypeClassifierFile.write("__label__"+str(musicType)+" , "+" ".join(function_text).lower()+'\n')
-			TypeClassifierFile.close()
-			if musicType == 1:
-				return "\n".join([msg, "Playing song :", self.mp.Play(song_name, artist_name, album_name)])#self.mp.Play(song_name, artist_name, album_name)])
-			if musicType == 2:
-				return "\n".join([msg, self.mp.Stop()])
-			if musicType == 3:
-				return "\n".join([msg, self.mp.Pause()])
-			if musicType == 4:
-				return "\n".join([msg, self.mp.Next()])
-			if musicType == 5:
-				return "\n".join([msg, self.mp.Prev()])
-			textType = 4
-		
-		if textType == 2:
-			hardwClassifier = TypeClassifier("fastText/voiceai-hardware.bin", "fastText"+"/fasttext")
-			hardwType, prob = hardwClassifier.classifyText(" ".join(function_text))
-			if hardwType > -1:
-				print("Prob : "+prob)
-			else:
-				return "I'm sorry I didn't get that, Vidur"
-
-			print(hardwType)
-			TypeClassifierFile = open("fastText/voiceai-hardware.tsv", 'a')
-			TypeClassifierFile.write("__label__"+str(hardwType)+" , "+" ".join(function_text).lower()+'\n')
-			TypeClassifierFile.close()
-			textType = 4
-			percent = 15
-			if len(NUM) > 0:
-				percent = int(NUM[0][1])
-			if hardwType == 1:
-				return "".join([msg, self.hc.increaseVolume(percent)])
-			if hardwType == 2:
-				return "".join([msg, self.hc.increaseVolume(percent, False)])
-			if hardwType == 3:
-				return "".join([msg, self.hc.increaseBrightness(percent)])
-			if hardwType == 4:
-				return "".join([msg, self.hc.increaseBrightness(percent, False)])
-			if hardwType == 5:
-				return "".join([msg, self.hc.setVolume(percent)])
-			if hardwType == 6:
-				return "".join([msg, self.hc.setBrightness(percent)])
-
-
 		if textType == 3:
 			quantity = 1
 			if len(NUM) > 0:
@@ -225,3 +117,47 @@ class VoiceAIControl:
 		if textType == 4:
 			return "".join([msg, "Search request"])
 		"""
+
+	def nerTaggerRun(self, tags):
+		#filter_tags = ['NN', 'NNP', 'CD']
+		entities = []
+		ct = -1
+		prev_entity = False
+		for i, tup in enumerate(tags):
+			if tup[1] == 'xNN' or tup[1] == 'xNNP':
+				if prev_entity == True:
+					entities[ct].append((i, tup[0]))
+				else:
+					ct = ct + 1
+					entities.append([])
+					entities[ct].append((i, tup[0]))
+					prev_entity = True
+			else:
+				prev_entity = False
+
+		#print(entities)
+
+		pure_entities = []
+		ct = -1
+		prev_entity = False
+		for i, entity in enumerate(entities):
+			text = [tup[1] for tup in entity]
+			ner_tags = self.snt.tag(text)
+			#print(ner_tags)
+			prev_entity = False
+			for j, ner_tag in enumerate(ner_tags):
+				if ner_tag[1] == 'OOO':
+					prev_entity = False
+				else:
+					#print(i, j)
+					tags[entities[i][j][0]] = (tags[entities[i][j][0]][0], 'xNNP')
+					if prev_entity == True:
+						pure_entities[ct].append(ner_tag)
+					else:
+						ct = ct + 1
+						pure_entities.append([])
+						pure_entities[ct].append(ner_tag)
+						prev_entity = True
+
+			#print(pure_entities)
+		return tags, pure_entities
