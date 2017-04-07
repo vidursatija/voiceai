@@ -23,7 +23,7 @@ class VoiceAIControl:
 		FASTTEXT_DIR = "fastText"
 		MUSIC_DATABASE = "music_metadata.json"
 		
-		self.snt = StanfordNERTagger('models/stanford-ner/voiceai-ner.ser.gz', 'models/../stanford-ner/stanford-ner.jar')
+		self.snt = StanfordNERTagger('stanford-ner/voiceai-ner.ser.gz', 'models/../stanford-ner/stanford-ner.jar')
 		self.spt = StanfordPOSTagger('stanford-pos/voiceai_bi.tagger', 'models/../stanford-pos/stanford-postagger.jar') 
 #		self.spt = StanfordPOSTagger('/run/media/vidur/Kachra/edu/stanford/nlp/models/pos-tagger/english-caseless-left3words-distsim.tagger', 'models/../stanford-pos/stanford-postagger.jar') 
 

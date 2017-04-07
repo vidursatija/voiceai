@@ -21,22 +21,50 @@ for songs in list:
 	if prevArtist == artistName:
 		if prevAlbum != albumName:
 			prevAlbum = albumName
-			
+
+			f.write('album\tOOO\n')
 			for aw in albumWords:
 				f.write(aw)
-				f.write('\tART\n')
+				f.write('\tALB\n')
 			f.write('\n')
-		
+
+			for aw in albumWords:
+				f.write(aw)
+				f.write('\tALB\n')
+			f.write('album\tOOO\n')
+			f.write('\n')
+			
+		f.write('song\tOOO\n')
 		for aw in songWords:
 			f.write(aw)
-			f.write('\tART\n')
+			f.write('\tTRK\n')
 		f.write('\n')
 
+		for aw in songWords:
+			f.write(aw)
+			f.write('\tTRK\n')
+		f.write('song\tOOO\n')
+		f.write('\n')
+		
 	else:
+		f.write('artist\tOOO\n')
 		for aw in artistWords:
 			f.write(aw)
 			f.write('\tPER\n')
 		f.write('\n')
+
+		f.write('band\tOOO\n')
+		for aw in artistWords:
+			f.write(aw)
+			f.write('\tPER\n')
+		f.write('\n')
+
+		for aw in artistWords:
+			f.write(aw)
+			f.write('\tPER\n')
+		f.write('songs\tOOO\n')
+		f.write('\n')
+		
 		prevArtist = artistName
 
 f.close()

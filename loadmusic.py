@@ -62,10 +62,10 @@ class MusicControl:
 		text = [tup[0] for tup in filtered_tags]
 		f_type, prob = self.classifier.classifyText(" ".join(text))
 
-		msg = ""
+		msg = " ".join(text)
 
 		if f_type > -1:
-			print("Prob : "+prob)
+			print("Prob : "+str(prob))
 		else:
 			return "I'm sorry I didn't get that, Vidur"
 
@@ -74,27 +74,29 @@ class MusicControl:
 		song_entity = None
 
 		for entity in pure_entities:
+			text = [tup[0] for tup in entity]
 			if entity[0][1] == 'TRK':
-				song_entity = ' '.join(entity)
+				song_entity = ' '.join(text)
 				continue
 			if entity[0][1] == 'ALB':
-				album_entity = ' '.join(entity)
+				album_entity = ' '.join(text)
 				continue
 			if entity[0][1] == 'PER':
-				artist_entity = ' '.join(entity)
+				artist_entity = ' '.join(text)
 				continue
 
-		if musicType == 1:
+		if f_type == 1:
 			return "\n".join([msg, "Playing song :", self.Play(song_entity, artist_entity, album_entity)])#self.mp.Play(song_name, artist_name, album_name)])
-		if musicType == 2:
+		if f_type == 2:
 			return "\n".join([msg, self.Stop()])
-		if musicType == 3:
+		if f_type == 3:
 			return "\n".join([msg, self.Pause()])
-		if musicType == 4:
+		if f_type == 4:
 			return "\n".join([msg, self.Next()])
-		if musicType == 5:
+		if f_type == 5:
 			return "\n".join([msg, self.Prev()])
 
+		return "I'm sorry, I didn't get that"
 
 	def PlayList(self, SongList=None):
 		firstSongLoc = SongList[0][3]
