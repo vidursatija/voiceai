@@ -4,6 +4,8 @@ Voiceai is a library for controlling a machine using text and voice based interf
 1. The [Stanford NER tagger](http://nlp.stanford.edu/software/CRF-NER.shtml) for NER Tagging
 2. The [Stanford POS tagger](http://nlp.stanford.edu/software/tagger.shtml) for POS Tagging
 3. The Facebook [fastText](https://github.com/facebookresearch/fastText) for text classification
+4. The [pint](https://pint.readthedocs.io/en/0.7.2/) library for converting units
+5. The [fixer.io](http://api.fixer.io/) api for converting currencies
 
 ## Features 
 
@@ -24,8 +26,8 @@ Note : ML Algorithm for learning taste of music coming soon.
   * Adjust brightness (*needs root access*)
   
 3. Conversion Control
-  * Convert units and dimensions (*coming soon*)
-  * Convert currencies (*internet required*) ([fixer.io](http://api.fixer.io/))
+  * Convert units and dimensions
+  * Convert currencies (*internet required*)
   
 ##### Coming Soon
 
@@ -44,7 +46,9 @@ Note : ML Algorithm for learning taste of music coming soon.
 #### The following features are available using scripting:
 
 1. Training
-  * Added new sentences for text classification (fastText)
+  * Add new sentences for text classification (fastText)
+  * Add new NER tags for better support (Stanford-NER)
+  * Add new POS tags for better support (Stanford-POSTagger)
 
 ### Installation
 Place the voiceai directory in your project
@@ -61,5 +65,4 @@ VC = voiceai.VoiceAIControl()
 print(VC.process_message("Play some Taylor Swift songs"))
 print(VC.process_message("Increase brightness by 10%"))
 print(VC.process_message("How many miles are there in a kilometer?"))
-print(VC.process_message("Search the web for latest news"))
 ```

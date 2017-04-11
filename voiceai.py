@@ -59,8 +59,8 @@ class VoiceAIControl:
 		msg_words[0] = msg_words[0].lower()
 		msg_words[0] = "".join([msg_words[0][0].upper(), msg_words[0][1:]])
 
-
-		tags = self.spt.tag(msg_words)
+		tags = [('Convert', 'xVB'), ('100', 'xCD'), ('miles', 'xNN'), ('to', 'xTO'), ('nautical', 'xNN'), ('mile', 'xNN')]
+		#tags = self.spt.tag(msg_words)
 
 		print(tags)
 
@@ -69,7 +69,7 @@ class VoiceAIControl:
 		print(tags)
 		print(pure_entities)
 
-		# take tags -> run NER -> keep 000 tags as same, rest are converted to NNP
+		# take tags -> run NER -> keep 000 tags as same, rest are converted to xNNP
 
 		all_filters = []
 		for control in self.controls:

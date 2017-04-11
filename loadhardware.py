@@ -22,7 +22,7 @@ class HardwareControl:
 		self.volumeCmd = "amixer set 'Master' "
 
 	def textFilter(self, tagged):
-		keep_words = ['xVB', 'xRP', 'xNN', 'xIN']
+		keep_words = ['xVB', 'xRP', 'xNN']
 		change_tags = ['xCD']
 		# change tags -> keep tags -> return array of tuple
 
@@ -53,10 +53,10 @@ class HardwareControl:
 					filtered_tags.append(tup)
 					break
 
-			for c_t in change_tags:
-				if tup[1] == 'xCD':
-					NUM.append(int(tup[0]))
+			if tup[1] == 'xCD':
+				NUM.append(int(tup[0]))
 
+			for c_t in change_tags:
 				if tup[1] == c_t:
 					filtered_tags.append((tup[1], tup[1]))
 					break

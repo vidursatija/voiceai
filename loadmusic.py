@@ -39,12 +39,14 @@ class MusicControl:
 					filtered_tags.append((tup[1], tup[1]))
 					break
 
-		print("Entities")
 		return filtered_tags
 
 	def functionFilter(self, tagged, pure_entities):
 		keep_words = ['xVB', 'xRP', 'xNN']
-		change_tags = ['xNNP', 'xJJ']
+		change_tags = ['xNNP']
+
+		modifier = ""
+		no_more_modifier = False
 		# change tags -> keep tags -> return array of tuple
 
 		filtered_tags = []
@@ -53,6 +55,10 @@ class MusicControl:
 				if tup[1] == k_w:
 					filtered_tags.append(tup)
 					break
+
+			if tup[1] == 'xJJ' and no_more_modifier == False:
+				modifier = tup[0]
+				no_more_modifier = True
 
 			for c_t in change_tags:
 				if tup[1] == c_t:
@@ -68,6 +74,26 @@ class MusicControl:
 			print("Prob : "+str(prob))
 		else:
 			return "I'm sorry I didn't get that, Vidur"
+
+		good_words = ['good', 'nice', 'best', 'amazing', 'great', 'hot', 'hottest']
+		bad_words = ['bad', 'boring', 'worst', 'shitty']
+		next_words = ['next', 'upcoming']
+		last_words = ['previous', 'last']
+
+		if f_type == 1:
+			if modifier in last_words:
+				f_type = 5
+			else:
+				if modifier in next_words:
+					f_type = 4
+				else:
+					if modifier in good_words:
+						#Do something to modify play
+						pass
+					else:
+						if modifier in bad_words:
+							#Do something to modify play
+							pass 
 
 		album_entity = None
 		artist_entity = None
@@ -85,12 +111,12 @@ class MusicControl:
 				artist_entity = ' '.join(text)
 				continue
 
-		if f_type == 1:
-			return "\n".join([msg, "Playing song :", self.Play(song_entity, artist_entity, album_entity)])#self.mp.Play(song_name, artist_name, album_name)])
 		if f_type == 2:
 			return "\n".join([msg, self.Stop()])
 		if f_type == 3:
 			return "\n".join([msg, self.Pause()])
+		if f_type == 1:
+			return "\n".join([msg, "Playing song :", self.Play(song_entity, artist_entity, album_entity)])#self.mp.Play(song_name, artist_name, album_name)])
 		if f_type == 4:
 			return "\n".join([msg, self.Next()])
 		if f_type == 5:
@@ -121,22 +147,7 @@ class MusicControl:
 					self.list[0], song = song, self.list[0]
 					return self.PlayList(self.list)
 
-			#SEARCH ALBUMS
-			#albumFound = False
-			#startIndex = 0
-			#endIndex = 0
-			albumList = []
-			#self.list.sort(key=lambda tup:tup[0])
-			for i, song in enumerate(self.list):
-				index = (song[0].lower()).find(song_name)
-				if index > -1:
-					albumList.append(self.list[i])
-
-			if len(albumList) > 0:
-				random.shuffle(albumList)
-				return self.PlayList(albumList)
-				
-			return "No Song/Album Found"
+			return "No Song Found"
 
 		if song_name != None and artist_name != None and album_name == None:
 			song_name = song_name.lower()
@@ -150,21 +161,7 @@ class MusicControl:
 					self.list[0], song = song, self.list[0]
 					return self.PlayList(self.list)
 
-			#albumFound = False
-			#startIndex = 0
-			#endIndex = 0
-			albumList = []
-			#self.list.sort(key=lambda tup:tup[0])
-			for i, song in enumerate(self.list):
-				index1 = (song[0].lower()).find(song_name)
-				index2 = (song[1].lower()).find(artist_name)
-				if index1 > -1 and index2 > -1:
-					albumList.append(self.list[i])
-			if len(albumList) > 0:
-				random.shuffle(albumList)
-				return self.PlayList(albumList)
-				
-			return "No Song/Album Found"
+			return "No Song Found"
 				
 		if song_name != None and artist_name == None and album_name != None:
 			return "Feature Not Available"
@@ -191,13 +188,44 @@ class MusicControl:
 				random.shuffle(artistList)
 				return self.PlayList(artistList)
 				
-			return "No Song/Album Found"
+			return "Artist not found"
 
 		if song_name == None and artist_name == None and album_name != None:
-			return "Feature Not Available"
+			#SEARCH ALBUMS
+			#albumFound = False
+			#startIndex = 0
+			#endIndex = 0
+			album_name = album_name.lower()
+			albumList = []
+			#self.list.sort(key=lambda tup:tup[0])
+			for i, song in enumerate(self.list):
+				index = (song[0].lower()).find(album_name)
+				if index > -1:
+					albumList.append(self.list[i])
+
+			if len(albumList) > 0:
+				random.shuffle(albumList)
+				return self.PlayList(albumList)
+			
+			return "No Album Found"
 
 		if song_name == None and artist_name != None and album_name != None:
-			return "Feature Not Available"
+			artist_name = artist_name.lower()
+			#albumFound = False
+			#startIndex = 0
+			#endIndex = 0
+			albumList = []
+			#self.list.sort(key=lambda tup:tup[0])
+			for i, song in enumerate(self.list):
+				index1 = (song[0].lower()).find(song_name)
+				index2 = (song[1].lower()).find(artist_name)
+				if index1 > -1 and index2 > -1:
+					albumList.append(self.list[i])
+			if len(albumList) > 0:
+				random.shuffle(albumList)
+				return self.PlayList(albumList)
+
+			return "No Album Found"
 
 		return "Something"		
 
@@ -214,13 +242,17 @@ class MusicControl:
 
 	def Pause(self):
 		os.system(" ".join(['./mprisvlc.sh', 'vlc', 'pause']))
+		return "Paused the song"
 
 	def Stop(self):
 		os.system(" ".join(['./mprisvlc.sh', 'vlc', 'stop']))
+		return "Stopped the song"
 
 	def Next(self):
-		os.system(" ".join(['./mprisvlc.sh', 'vlc', 'next']))		
+		os.system(" ".join(['./mprisvlc.sh', 'vlc', 'next']))
+		return "Skipping this song. Playing next one"		
 	
 	def Prev(self):
 		os.system(" ".join(['./mprisvlc.sh', 'vlc', 'prev']))
+		return "Playing the previous song"
 	
