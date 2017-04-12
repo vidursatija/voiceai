@@ -2,7 +2,7 @@
 import nltk
 from nltk.tag.stanford import StanfordNERTagger
 from nltk.tag.stanford import StanfordPOSTagger
-from nltk.parse.stanford import StanfordDependencyParser
+#from nltk.parse.stanford import StanfordDependencyParser
 
 #SYSTEM LIBs
 #import urllib.request
@@ -11,10 +11,11 @@ import os
 import numpy as np
 
 #MODULE CONTROLS
+from typeclassifier import TypeClassifier
 from loadmusic import MusicControl
 from loadhardware import HardwareControl
-from typeclassifier import TypeClassifier
 from loadconversion import ConversionControl
+from loadquestions import QuestionControl
 
 class VoiceAIControl:
 	def __init__(self):#, ner_dir, pos_dir, ft_dir):
@@ -34,6 +35,8 @@ class VoiceAIControl:
 		self.controls.append(HardwareControl())
 		self.controls.append(ConversionControl())
 
+		self.qsc = QuestionControl()
+
 		self.my_name = "Halzee"
 		self.age = 16
 		self.creator = "Vidur"
@@ -46,7 +49,7 @@ class VoiceAIControl:
 		#1 - Music
 		#2 - Brightness and Volume
 		#3 - Units and Money
-		#4 - Questions/Google/Wiki
+		#Error - Questions/Google/Wiki
 		#5 - Alarm
 
 		if msg_words[0] == self.my_name:
@@ -59,8 +62,8 @@ class VoiceAIControl:
 		msg_words[0] = msg_words[0].lower()
 		msg_words[0] = "".join([msg_words[0][0].upper(), msg_words[0][1:]])
 
-		tags = [('Convert', 'xVB'), ('100', 'xCD'), ('miles', 'xNN'), ('to', 'xTO'), ('nautical', 'xNN'), ('mile', 'xNN')]
-		#tags = self.spt.tag(msg_words)
+		#tags = [('Convert', 'xVB'), ('100', 'xCD'), ('miles', 'xNN'), ('to', 'xTO'), ('nautical', 'xNN'), ('mile', 'xNN')]
+		tags = self.spt.tag(msg_words)
 
 		print(tags)
 
@@ -74,49 +77,24 @@ class VoiceAIControl:
 		all_filters = []
 		for control in self.controls:
 			all_filters.append(control.textFilter(tags))
-		
-		#all_types = []
-		#all_probs = []
-		final_type = -1
-		max_count = -1
-		type_counts = np.zeros(len(all_filters), dtype=int)
 
-		for f in all_filters:
+		best_prob = 0
+		final_type = -1
+		
+		for i, f in enumerate(all_filters):
 			text = [tup[0] for tup in f]
 			t, p = self.tyc.classifyText(" ".join(text))
-			#all_types.append(t)
-			#all_probs.append(p)
-			if t == -1:
-				continue
-			type_counts[t-1] = type_counts[t-1] + 1
+			if t == i:
+				if p > best_prob:
+					best_prob = p
+					final_type = i
 
-		for i, ct in enumerate(type_counts):
-			if ct > max_count:
-				max_count = ct
-				final_type = i
-		
-		print(self.controls[final_type].functionFilter(tags, pure_entities))
+		print(final_type, best_prob)
 
-		"""
-		
-		if textType == 3:
-			quantity = 1
-			if len(NUM) > 0:
-				quantity = float(NUM[0][1])
-
-			print(Money)
-
-			if len(Money) > 1:
-				return "".join([msg, self.cc.convertMoney(Money[0], quantity, Money[1])])
-			else:
-				if len(Money) > 0:
-					return "".join([msg, self.cc.convertMoney(Money[0], quantity)])
-				else:
-					return msg
-
-		if textType == 4:
-			return "".join([msg, "Search request"])
-		"""
+		if best_prob < 0.8:
+			return self.qsc.search(" ".join(msg_words))
+		else:
+			return self.controls[final_type].functionFilter(tags, pure_entities)
 
 	def nerTaggerRun(self, tags):
 		#filter_tags = ['NN', 'NNP', 'CD']

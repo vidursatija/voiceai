@@ -6,6 +6,7 @@ Voiceai is a library for controlling a machine using text and voice based interf
 3. The Facebook [fastText](https://github.com/facebookresearch/fastText) for text classification
 4. The [pint](https://pint.readthedocs.io/en/0.7.2/) library for converting units
 5. The [fixer.io](http://api.fixer.io/) api for converting currencies
+6. The [duckduckgo](https://github.com/crazedpsyc/python-duckduckgo) wrapper for searching
 
 ## Features 
 
@@ -28,11 +29,11 @@ Note : ML Algorithm for learning taste of music coming soon.
 3. Conversion Control
   * Convert units and dimensions
   * Convert currencies (*internet required*)
-  
-##### Coming Soon
 
 4. Web search Control
   * Search anything using the [DuckDuckGo](https://duckduckgo.com) api
+
+##### Coming Soon
 
 5. Greeting Control
   * Engage in a casual conversation with the bot
