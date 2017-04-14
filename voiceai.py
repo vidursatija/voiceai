@@ -72,6 +72,7 @@ class VoiceAIControl:
 		print(tags)
 		print(pure_entities)
 
+		
 		# take tags -> run NER -> keep 000 tags as same, rest are converted to xNNP
 
 		all_filters = []
